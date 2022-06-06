@@ -5,6 +5,9 @@ import java.util.*;
 import java.math.*;
 import com.UnitTestAutomation.ExternalClass1;
 import com.UnitTestAutomation.ExternalClass2;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Component;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -50,7 +53,27 @@ public void testExternalClass2Function2(){
 }
 
 @Test
+public void testgetRecordInfoById(){
+
+}
+
+@Test
+public void testsaveRecord(){
+
+}
+
+@Test
 public void testExternalClass1Function3(){
+
+}
+
+@Test
+public void testgetEntityKeyPrefix(){
+
+}
+
+@Test
+public void testgetLabel(){
 
 }
 

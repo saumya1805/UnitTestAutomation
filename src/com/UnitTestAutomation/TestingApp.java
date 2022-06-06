@@ -29,8 +29,14 @@ public class TestingApp extends JFrame implements ActionListener {
     //Stores the functions to be used in @Test
     public static Vector<String> functionsToBeTested=new Vector<>();
 
+    public static Vector<String> autowiredObjectList=new Vector<>();
+
     //Hashmap storing information about the public functions being declared in a class, what external objects these functions use and what functions fo these external objects call
     public static HashMap<String, HashMap<String, List<String>>> functionData = new LinkedHashMap();
+
+    //Flag for registering that previous file had an @Autowired
+
+    public static int autowiredFlag=0;
 
     //Java Swing GUI Components
     // JFrame
@@ -181,7 +187,7 @@ public class TestingApp extends JFrame implements ActionListener {
 
             }
             //Detects the class which is being tested
-            if (line.indexOf("public class") == 0) {
+            else if (line.indexOf("public class") == 0) {
                 //Importing the additional dependencies here (as to be imported only once)
                 output.write("import static org.junit.Assert.assertEquals;\n");
                 output.write("import static org.junit.Assert.assertFalse;\n");
@@ -218,7 +224,7 @@ public class TestingApp extends JFrame implements ActionListener {
             }
 
             //Public function has been detected in the line
-            if (line.contains("throws") && line.contains("public")) {
+            else if (line.contains("throws") && line.contains("public")) {
 
                 //Logic to extract function name
                 int index = line.indexOf("public") + 7;
@@ -259,8 +265,37 @@ public class TestingApp extends JFrame implements ActionListener {
                     }
                 }
                 currFunction = functionName;
-            } else {
+            }
+            else if(line.contains("@Autowired")){
+                autowiredFlag=1;
+            }
+            else if(autowiredFlag==1){
+                String temp=line.substring(line.indexOf("private")+8,line.indexOf(";")); //Abc abc
+                System.out.println(temp);
+                String objName=temp.substring(temp.indexOf(" ")+1);
+                autowiredObjectList.add(objName);
+                autowiredFlag=0;
+            }
+            else {
                 //Logic for extracting the functions that are being called by the external objects
+                for(int i=0;i<autowiredObjectList.size();i++){
+                    if(line.contains(autowiredObjectList.get(i)+".")){
+                        int startIndex = line.indexOf(".") + 1;
+                        int endIndex = line.indexOf(")") + 1;
+                        List<String> temp = new ArrayList<>();
+                        functionData.get(currFunction).put(autowiredObjectList.get(i),temp);
+                        functionData.get(currFunction).get(autowiredObjectList.get(i)).add(line.substring(startIndex,endIndex));
+
+                        //To extract function without the parameter list for @Test
+                        endIndex=line.indexOf("(")+1;
+                        String functionWithoutParameters=line.substring(startIndex,endIndex)+")";
+
+                        if(!functionsToBeTested.contains(functionWithoutParameters)){
+                            functionsToBeTested.add(functionWithoutParameters);
+                        }
+                    }
+                }
+
                 for (Map.Entry<String, HashMap<String, List<String>>> entry : functionData.entrySet()) {
                     if (entry.getKey() == currFunction) {
                         for (Map.Entry<String, List<String>> entry2 : entry.getValue().entrySet()) {
@@ -312,6 +347,8 @@ public class TestingApp extends JFrame implements ActionListener {
                 output.write("public void "+"test"+functionsToBeTested.get(i)+"{\n\n");
                 output.write("}\n\n");
             }
+
+            System.out.println(functionsToBeTested);
 
             output.write("}");
             br.close();

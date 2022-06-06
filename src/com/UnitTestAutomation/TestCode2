@@ -6,19 +6,34 @@ import java.util.*;
 import java.math.*;
 import com.UnitTestAutomation.ExternalClass1;
 import com.UnitTestAutomation.ExternalClass2;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Component;
 
 public class TestCode{
 
+    @Autowired
+    private RecordUtils recordUtils;
+
+    @Autowired
+    private RecordService recordService;
+
+    @Autowired
+    private LabelService labelService;
 
     public void TestFunction1(ExternalClass1 obj1,ExternalClass2 obj2) throws IndexOutOfBoundsException{
         obj1.ExternalClass1Function1();
         obj1.ExternalClass1Function2();
         obj2.ExternalClass2Function2();
+        String recordInfo=recordUtils.getRecordInfoById(String id);
+        String record=recordService.saveRecord(documentChecklistRecord);
         return;
     }
 
     public String TestFunction2(ExternalClass1 obj1) throws IOException{
         obj1.ExternalClass1Function3();
+        String keyPrefix=recordUtils.getEntityKeyPrefix(String entityName);
+        String label=labelService.getLabel();
         return "";
     }
 
