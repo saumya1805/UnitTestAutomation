@@ -32,6 +32,15 @@ ExternalClass1 mockExternalClass1;
 @Mock
 ExternalClass2 mockExternalClass2;
 
+@Mock
+recordUtils mockrecordUtils;
+
+@Mock
+recordService mockrecordService;
+
+@Mock
+labelService mocklabelService;
+
 @Before
 public void beforeTest(){
 

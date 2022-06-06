@@ -278,24 +278,6 @@ public class TestingApp extends JFrame implements ActionListener {
             }
             else {
                 //Logic for extracting the functions that are being called by the external objects
-                for(int i=0;i<autowiredObjectList.size();i++){
-                    if(line.contains(autowiredObjectList.get(i)+".")){
-                        int startIndex = line.indexOf(".") + 1;
-                        int endIndex = line.indexOf(")") + 1;
-                        List<String> temp = new ArrayList<>();
-                        functionData.get(currFunction).put(autowiredObjectList.get(i),temp);
-                        functionData.get(currFunction).get(autowiredObjectList.get(i)).add(line.substring(startIndex,endIndex));
-
-                        //To extract function without the parameter list for @Test
-                        endIndex=line.indexOf("(")+1;
-                        String functionWithoutParameters=line.substring(startIndex,endIndex)+")";
-
-                        if(!functionsToBeTested.contains(functionWithoutParameters)){
-                            functionsToBeTested.add(functionWithoutParameters);
-                        }
-                    }
-                }
-
                 for (Map.Entry<String, HashMap<String, List<String>>> entry : functionData.entrySet()) {
                     if (entry.getKey() == currFunction) {
                         for (Map.Entry<String, List<String>> entry2 : entry.getValue().entrySet()) {
@@ -314,6 +296,23 @@ public class TestingApp extends JFrame implements ActionListener {
                         break;
                     }
                 }
+                for(int i=0;i<autowiredObjectList.size();i++){
+                    if(line.contains(autowiredObjectList.get(i)+".")){
+                        int startIndex = line.indexOf(".") + 1;
+                        int endIndex = line.indexOf(")") + 1;
+                        List<String> temp = new ArrayList<>();
+                        functionData.get(currFunction).put(autowiredObjectList.get(i),temp);
+                        functionData.get(currFunction).get(autowiredObjectList.get(i)).add(line.substring(startIndex,endIndex));
+
+                        //To extract function without the parameter list for @Test
+                        endIndex=line.indexOf("(")+1;
+                        String functionWithoutParameters=line.substring(startIndex,endIndex)+")";
+
+                        if(!functionsToBeTested.contains(functionWithoutParameters)){
+                            functionsToBeTested.add(functionWithoutParameters);
+                        }
+                    }
+                }
             }
         }
             //Generating @Mocks in the file
@@ -321,6 +320,13 @@ public class TestingApp extends JFrame implements ActionListener {
                 output.write("@Mock\n");
                 output.write(externalObjectList.get(i) + " mock" + externalObjectList.get(i) + ";\n\n");
             }
+
+        for (int i = 0; i < autowiredObjectList.size(); i++) {
+            output.write("@Mock\n");
+            output.write(autowiredObjectList.get(i) + " mock" + autowiredObjectList.get(i) + ";\n\n");
+        }
+
+
 
             table.setValueAt("Public functions being called", 0, 0);
             table.setValueAt("External objects being referenced", 0, 1);
