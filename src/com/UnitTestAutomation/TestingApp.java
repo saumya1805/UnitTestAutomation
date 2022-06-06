@@ -26,6 +26,9 @@ public class TestingApp extends JFrame implements ActionListener {
     //Stores the external objects being referenced in a class which would be mocked
     public static Vector<String> externalObjectList = new Vector<>();
 
+    //Stores the functions to be used in @Test
+    public static Vector<String> functionsToBeTested=new Vector<>();
+
     //Hashmap storing information about the public functions being declared in a class, what external objects these functions use and what functions fo these external objects call
     public static HashMap<String, HashMap<String, List<String>>> functionData = new LinkedHashMap();
 
@@ -265,6 +268,12 @@ public class TestingApp extends JFrame implements ActionListener {
                                 int startIndex = line.indexOf(".") + 1;
                                 int endIndex = line.indexOf(")") + 1;
                                 entry2.getValue().add(line.substring(startIndex, endIndex));
+                                //To extract function without the parameter list for @Test
+                                endIndex=line.indexOf("(")+1;
+                                String functionWithoutParameters=line.substring(startIndex,endIndex)+")";
+                                if(!functionsToBeTested.contains(functionWithoutParameters)){
+                                    functionsToBeTested.add(functionWithoutParameters);
+                                }
                             }
                         }
                         break;
@@ -292,6 +301,16 @@ public class TestingApp extends JFrame implements ActionListener {
                     count++;
                 }
                 row += count;
+            }
+
+            output.write("@Before\n");
+            output.write("public void beforeTest(){\n\n");
+            output.write("}\n\n");
+
+            for(int i=0;i<functionsToBeTested.size();i++){
+                output.write("@Test\n");
+                output.write("public void "+"test"+functionsToBeTested.get(i)+"{\n\n");
+                output.write("}\n\n");
             }
 
             output.write("}");
