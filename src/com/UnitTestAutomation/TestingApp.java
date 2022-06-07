@@ -236,7 +236,6 @@ public class TestingApp extends JFrame implements ActionListener {
                     }
                     index++;
                 }
-
                 String functionName = line.substring(index, line.indexOf(')') + 1);
                 functionList.add(functionName);
                 HashMap<String, List<String>> temp = new LinkedHashMap<>();
@@ -265,6 +264,7 @@ public class TestingApp extends JFrame implements ActionListener {
                     }
                 }
                 currFunction = functionName;
+                functionsToBeTested.add(functionName);
             }
             else if(line.contains("@Autowired")){
                 autowiredFlag=1;
@@ -288,9 +288,9 @@ public class TestingApp extends JFrame implements ActionListener {
                                 //To extract function without the parameter list for @Test
                                 endIndex=line.indexOf("(")+1;
                                 String functionWithoutParameters=line.substring(startIndex,endIndex)+")";
-                                if(!functionsToBeTested.contains(functionWithoutParameters)){
+                                /*if(!functionsToBeTested.contains(functionWithoutParameters)){
                                     functionsToBeTested.add(functionWithoutParameters);
-                                }
+                                }*/
                             }
                         }
                         break;
@@ -308,25 +308,23 @@ public class TestingApp extends JFrame implements ActionListener {
                         endIndex=line.indexOf("(")+1;
                         String functionWithoutParameters=line.substring(startIndex,endIndex)+")";
 
-                        if(!functionsToBeTested.contains(functionWithoutParameters)){
+                        /*if(!functionsToBeTested.contains(functionWithoutParameters)){
                             functionsToBeTested.add(functionWithoutParameters);
-                        }
+                        }*/
                     }
                 }
             }
         }
             //Generating @Mocks in the file
-            for (int i = 0; i < externalObjectList.size(); i++) {
+        for (int i = 0; i < externalObjectList.size(); i++) {
                 output.write("@Mock\n");
                 output.write(externalObjectList.get(i) + " mock" + externalObjectList.get(i) + ";\n\n");
-            }
+        }
 
         for (int i = 0; i < autowiredObjectList.size(); i++) {
             output.write("@Mock\n");
             output.write(autowiredObjectList.get(i) + " mock" + autowiredObjectList.get(i) + ";\n\n");
         }
-
-
 
             table.setValueAt("Public functions being called", 0, 0);
             table.setValueAt("External objects being referenced", 0, 1);
@@ -353,8 +351,6 @@ public class TestingApp extends JFrame implements ActionListener {
                 output.write("public void "+"test"+functionsToBeTested.get(i)+"{\n\n");
                 output.write("}\n\n");
             }
-
-            System.out.println(functionsToBeTested);
 
             output.write("}");
             br.close();

@@ -47,42 +47,12 @@ public void beforeTest(){
 }
 
 @Test
-public void testExternalClass1Function1(){
+public void testFunction1(ExternalClass1 obj1,ExternalClass2 obj2){
 
 }
 
 @Test
-public void testExternalClass1Function2(){
-
-}
-
-@Test
-public void testExternalClass2Function2(){
-
-}
-
-@Test
-public void testgetRecordInfoById(){
-
-}
-
-@Test
-public void testsaveRecord(){
-
-}
-
-@Test
-public void testExternalClass1Function3(){
-
-}
-
-@Test
-public void testgetEntityKeyPrefix(){
-
-}
-
-@Test
-public void testgetLabel(){
+public void testFunction2(ExternalClass1 obj1){
 
 }
 
