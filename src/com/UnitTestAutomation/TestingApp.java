@@ -1,15 +1,18 @@
 package com.UnitTestAutomation;
 
+import sun.awt.image.ImageWatched;
+
+import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.util.*;
 import javax.swing.*;
-import javax.swing.table.JTableHeader;
-import java.util.HashMap.*;
-
+import java.util.List;
 import static javax.lang.model.SourceVersion.*;
 
-public class TestingApp extends JFrame implements ActionListener {
+public class TestingApp extends JFrame implements ActionListener{
+
+    FileWriter output = new FileWriter("TestCodeTester.java");
 
     //Name of the class being tested
     public static String nameOfClassBeingTested;
@@ -19,9 +22,6 @@ public class TestingApp extends JFrame implements ActionListener {
 
     //The absolute filepath taken as input from the user via the Java Swing GUI
     public static String inputFilePath;
-
-    //Stores the public functions present within the class to be tested (These are the functions to be tested)
-    public static Vector<String> functionList = new Vector<>();
 
     //Stores the external objects being referenced in a class which would be mocked
     public static Vector<String> externalObjectList = new Vector<>();
@@ -34,7 +34,19 @@ public class TestingApp extends JFrame implements ActionListener {
     //Hashmap storing information about the public functions being declared in a class, what external objects these functions use and what functions fo these external objects call
     public static HashMap<String, HashMap<String, List<String>>> functionData = new LinkedHashMap();
 
+    //Hashmap to store what dummy value will be returned for the mocked functions
+
+    public static HashMap<String,Vector<String>> whenReturnThisFunctions=new LinkedHashMap();
+
     //Flag for registering that previous file had an @Autowired
+
+    public static String t1;
+
+    public static String t2;
+
+    public static String t3;
+
+    public static String t4;
 
     public static int autowiredFlag=0;
 
@@ -42,26 +54,42 @@ public class TestingApp extends JFrame implements ActionListener {
     // JFrame
     static JFrame f;
 
+    static JPanel p;
+
     // JButton
     static JButton b;
+
+    static JButton test;
 
     // label to display text
     static JLabel l;
 
-    static JLabel l2;
+    static JLabel functionName;
 
     // text area
     static JTextArea jt;
+
+    static JTextArea jtParameters;
+
+    static JTextArea jtReturnVal;
+
+    static JTextArea jtPara1;
+
+    static JTextArea jtPara2;
 
     static JList li;
 
     static JList li1;
 
+    static JList list;
+
     //To display the hashmap created
     static JTable table;
 
+    static JCheckBox checkbox;
+
     // default constructor
-    TestingApp() {
+    public TestingApp() throws IOException {
     }
 
     // main class
@@ -72,18 +100,18 @@ public class TestingApp extends JFrame implements ActionListener {
         // create a label to display text
         l = new JLabel("The file path chosen is:\n");
 
-        l2 = new JLabel("The file path chosen is:\n");
-
-        //l3=new JLabel("The external objects referenced by these functions are:\n");
-
         // create a new button
         b = new JButton("Choose as filepath");
 
-        li = new JList(functionList);
+        li = new JList(functionsToBeTested);
 
         li1 = new JList(externalObjectList);
 
-        table = new JTable(100, 3);
+        list=new JList();
+
+        JCheckBox checkBox=new JCheckBox();
+
+        table = new JTable(40, 3);
         table.getColumnModel().getColumn(0).setPreferredWidth(400);
         table.getColumnModel().getColumn(1).setPreferredWidth(400);
         table.getColumnModel().getColumn(2).setPreferredWidth(400);
@@ -95,18 +123,33 @@ public class TestingApp extends JFrame implements ActionListener {
         b.addActionListener(te);
 
         // create a text area, specifying the rows and columns
-        jt = new JTextArea(25, 25);
+        jt = new JTextArea(4, 25);
 
-        JPanel p = new JPanel();
+        functionName=new JLabel();
+
+        jtParameters=new JTextArea(2,5);
+        jtReturnVal=new JTextArea(2,5);
+        jtPara1=new JTextArea(2,5);
+        jtPara2=new JTextArea(2,5);
+
+        test=new JButton("Test function");
+        test.addActionListener(te);
+
+        p = new JPanel();
 
         // add the components to the panel
         p.add(jt);
         p.add(b);
-        p.add(l2);
         p.add(l);
         p.add(li);
         p.add(li1);
         p.add(table);
+        p.add(functionName);
+        p.add(jtParameters);
+        p.add(jtReturnVal);
+        p.add(jtPara1);
+        p.add(jtPara2);
+        p.add(test);
 
         f.add(p);
         // set the size of frame
@@ -117,24 +160,37 @@ public class TestingApp extends JFrame implements ActionListener {
 
     // to be executed when the button is pressed
     public void actionPerformed(ActionEvent e) {
-        String s = e.getActionCommand();
-        //Checks if button is pressed. String would be set to button value
-        if (s.equals("Choose as filepath")) {
-            // Sets the public variable filepath to the input that will be passed to the user in the textarea field
-            inputFilePath = jt.getText();
-            //Displays the file path chosen on the label field
-            l.setText(inputFilePath);
-            try {
-                //calls the function that is responsible for reading code from the file whose path has been provided by user
-                readUsingFileReader(inputFilePath);
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
+
+        if(e.getSource()==b){
+            String s = e.getActionCommand();
+            //Checks if button is pressed. String would be set to button value
+            if (s.equals("Choose as filepath")) {
+                // Sets the public variable filepath to the input that will be passed to the user in the textarea field
+                inputFilePath = jt.getText();
+                //Displays the file path chosen on the label field
+                l.setText(inputFilePath);
+                try {
+                    //calls the function that is responsible for reading code from the file whose path has been provided by user
+                    readUsingFileReader(inputFilePath);
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+        }
+        if(e.getSource()==test){
+            String s=e.getActionCommand();
+            if(s.equals("Test function")){
+                try {
+                    generateTest();
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
             }
         }
     }
 
     //Function that parses the code to be tested
-    public static void readUsingFileReader(String filePath) throws IOException {
+    public void readUsingFileReader(String filePath) throws IOException {
 
         File file = new File(filePath);
         FileReader fr = null;
@@ -153,7 +209,7 @@ public class TestingApp extends JFrame implements ActionListener {
         File file1 = new File("TestCodeTester.java");
 
         //To write into the unit test code file
-        FileWriter output = new FileWriter("TestCodeTester.java");
+        //FileWriter output = new FileWriter("TestCodeTester.java");
 
         try {
             // create a new file with name specified
@@ -237,7 +293,6 @@ public class TestingApp extends JFrame implements ActionListener {
                     index++;
                 }
                 String functionName = line.substring(index, line.indexOf(')') + 1);
-                functionList.add(functionName);
                 HashMap<String, List<String>> temp = new LinkedHashMap<>();
                 functionData.put(functionName, temp);
 
@@ -271,7 +326,6 @@ public class TestingApp extends JFrame implements ActionListener {
             }
             else if(autowiredFlag==1){
                 String temp=line.substring(line.indexOf("private")+8,line.indexOf(";")); //Abc abc
-                System.out.println(temp);
                 String objName=temp.substring(temp.indexOf(" ")+1);
                 autowiredObjectList.add(objName);
                 autowiredFlag=0;
@@ -283,38 +337,49 @@ public class TestingApp extends JFrame implements ActionListener {
                         for (Map.Entry<String, List<String>> entry2 : entry.getValue().entrySet()) {
                             if (line.contains((String) entry2.getKey() + ".")) {
                                 int startIndex = line.indexOf(".") + 1;
-                                int endIndex = line.indexOf(")") + 1;
-                                entry2.getValue().add(line.substring(startIndex, endIndex));
-                                //To extract function without the parameter list for @Test
-                                endIndex=line.indexOf("(")+1;
-                                String functionWithoutParameters=line.substring(startIndex,endIndex)+")";
-                                /*if(!functionsToBeTested.contains(functionWithoutParameters)){
-                                    functionsToBeTested.add(functionWithoutParameters);
-                                }*/
+                                int endIndex = line.indexOf("(") + 1;
+                                entry2.getValue().add(line.substring(startIndex, endIndex)+")");
+
+                                /*List<String> temp = Arrays.asList(line.split(" "));
+                                String startWord=temp.get(0);
+                                //Not returning a value
+                                if(!isKeyword(startWord)) {
+                                    continue;
+                                }
+
+                                whenReturnThisFunctions.add(line.substring(line.indexOf(entry.getKey()),line.indexOf("(")+1)+")");*/
+                                }
+
                             }
                         }
                         break;
                     }
                 }
+
                 for(int i=0;i<autowiredObjectList.size();i++){
                     if(line.contains(autowiredObjectList.get(i)+".")){
                         int startIndex = line.indexOf(".") + 1;
-                        int endIndex = line.indexOf(")") + 1;
+                        int endIndex = line.indexOf("(") + 1;
                         List<String> temp = new ArrayList<>();
                         functionData.get(currFunction).put(autowiredObjectList.get(i),temp);
-                        functionData.get(currFunction).get(autowiredObjectList.get(i)).add(line.substring(startIndex,endIndex));
+                        functionData.get(currFunction).get(autowiredObjectList.get(i)).add(line.substring(startIndex,endIndex)+")");
 
-                        //To extract function without the parameter list for @Test
-                        endIndex=line.indexOf("(")+1;
-                        String functionWithoutParameters=line.substring(startIndex,endIndex)+")";
-
-                        /*if(!functionsToBeTested.contains(functionWithoutParameters)){
-                            functionsToBeTested.add(functionWithoutParameters);
-                        }*/
+                        /*line=line.trim();
+                        List<String> temp1 = Arrays.asList(line.split(" "));
+                        String startWord=temp1.get(0);
+                        System.out.println(startWord);
+                        //Not returning a value
+                        if(startWord.contains(".")) {
+                            continue;
+                        }
+                        Vector<String> temp2=new Vector<>();
+                        temp2.add(line.substring(line.indexOf(autowiredObjectList.get(i)),line.indexOf("(")+1)+")");
+                        whenReturnThisFunctions.put(currFunction,temp2);*/
+                        break;
                     }
                 }
             }
-        }
+
             //Generating @Mocks in the file
         for (int i = 0; i < externalObjectList.size(); i++) {
                 output.write("@Mock\n");
@@ -346,15 +411,50 @@ public class TestingApp extends JFrame implements ActionListener {
             output.write("public void beforeTest(){\n\n");
             output.write("}\n\n");
 
-            for(int i=0;i<functionsToBeTested.size();i++){
-                output.write("@Test\n");
-                output.write("public void "+"test"+functionsToBeTested.get(i)+"{\n\n");
-                output.write("}\n\n");
-            }
+
+
+            //System.out.println(whenReturnThisFunctions);
 
             output.write("}");
             br.close();
             fr.close();
+        }
+
+        public void generateTest() throws IOException {
+
+            //FileWriter output = new FileWriter("TestCodeTester.java");
+
+            for (String s : functionsToBeTested) {
+                functionName.setText(s);
+
+                t1=jtParameters.getText();
+                t2=jtReturnVal.getText();
+                t3=jtPara1.getText();
+                t4=jtPara2.getText();
+                
+
+                output.write("@Test\n");
+                output.write("public void " + "test" + s + "{\n\n");
+
+                /*for (Map.Entry<String, HashMap<String, List<String>>> entry : functionData.entrySet()) {
+
+                    if(entry.getKey()==s){
+                        for (Map.Entry<String, List<String>> entry2 : entry.getValue().entrySet()) {
+                            int key= Integer.parseInt(entry2.getKey());
+                            if(whenReturnThisFunctions.containsKey(key)){
+                                Vector<String> temp=whenReturnThisFunctions.get(key);
+                                for(int i=0;i<temp.size();i++){
+                                    output.write("when("+temp.get(i)+t1)
+                                }
+                            }
+                        }
+                        break;
+                    }
+                }*/
+
+                output.write("}\n\n");
+            }
             output.close();
         }
-    }
+}
+

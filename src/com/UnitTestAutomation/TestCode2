@@ -21,13 +21,13 @@ public class TestCode{
     @Autowired
     private LabelService labelService;
 
-    public void Function1(ExternalClass1 obj1,ExternalClass2 obj2) throws IndexOutOfBoundsException{
-        obj1.ExternalClass1Function1();
+    public String Function1(ExternalClass1 obj1,ExternalClass2 obj2,int id) throws IndexOutOfBoundsException{
+        obj1.ExternalClass1Function1("hello");
         obj1.ExternalClass1Function2();
         obj2.ExternalClass2Function2();
-        String recordInfo=recordUtils.getRecordInfoById(String id);
-        String record=recordService.saveRecord(documentChecklistRecord);
-        return;
+        String recordInfo=recordUtils.getRecordInfoById(int id);
+        String record=recordService.saveRecord(recordInfo);
+        return record;
     }
 
     public String Function2(ExternalClass1 obj1) throws IOException{
@@ -35,6 +35,10 @@ public class TestCode{
         String keyPrefix=recordUtils.getEntityKeyPrefix(String entityName);
         String label=labelService.getLabel();
         return "";
+    }
+
+    public int Function3(int a,int b) throws IndexOutOfBoundsException{
+
     }
 
     private void NonTestFunction() throws InstantiationError{
