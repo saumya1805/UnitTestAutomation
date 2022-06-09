@@ -22,8 +22,8 @@ public class TestCode{
     private LabelService labelService;
 
     public String Function1(ExternalClass1 obj1,ExternalClass2 obj2,int id) throws IndexOutOfBoundsException{
-        obj1.ExternalClass1Function1("hello");
-        obj1.ExternalClass1Function2();
+        String result=obj1.ExternalClass1Function1("hello");
+        String result2=obj1.ExternalClass1Function2();
         obj2.ExternalClass2Function2();
         String recordInfo=recordUtils.getRecordInfoById(int id);
         String record=recordService.saveRecord(recordInfo);

@@ -10,7 +10,13 @@ import javax.swing.*;
 import java.util.List;
 import static javax.lang.model.SourceVersion.*;
 
-public class TestingApp extends JFrame implements ActionListener{
+public class TestingApp extends JFrame implements ActionListener {
+
+
+    public static boolean check=false;
+    String s1;
+
+    public static int numKeys;
 
     FileWriter output = new FileWriter("TestCodeTester.java");
 
@@ -27,16 +33,16 @@ public class TestingApp extends JFrame implements ActionListener{
     public static Vector<String> externalObjectList = new Vector<>();
 
     //Stores the functions to be used in @Test
-    public static Vector<String> functionsToBeTested=new Vector<>();
+    public static Vector<String> functionsToBeTested = new Vector<>();
 
-    public static Vector<String> autowiredObjectList=new Vector<>();
+    public static Vector<String> autowiredObjectList = new Vector<>();
 
     //Hashmap storing information about the public functions being declared in a class, what external objects these functions use and what functions fo these external objects call
     public static HashMap<String, HashMap<String, List<String>>> functionData = new LinkedHashMap();
 
     //Hashmap to store what dummy value will be returned for the mocked functions
 
-    public static HashMap<String,Vector<String>> whenReturnThisFunctions=new LinkedHashMap();
+    public static HashMap<String, Vector<String>> whenReturnThisFunctions = new LinkedHashMap();
 
     //Flag for registering that previous file had an @Autowired
 
@@ -48,7 +54,7 @@ public class TestingApp extends JFrame implements ActionListener{
 
     public static String t4;
 
-    public static int autowiredFlag=0;
+    public static int autowiredFlag = 0;
 
     //Java Swing GUI Components
     // JFrame
@@ -64,7 +70,7 @@ public class TestingApp extends JFrame implements ActionListener{
     // label to display text
     static JLabel l;
 
-    static JLabel functionName;
+    //static JLabel functionName;
 
     // text area
     static JTextArea jt;
@@ -107,9 +113,9 @@ public class TestingApp extends JFrame implements ActionListener{
 
         li1 = new JList(externalObjectList);
 
-        list=new JList();
+        list = new JList();
 
-        JCheckBox checkBox=new JCheckBox();
+        JCheckBox checkBox = new JCheckBox();
 
         table = new JTable(40, 3);
         table.getColumnModel().getColumn(0).setPreferredWidth(400);
@@ -125,14 +131,14 @@ public class TestingApp extends JFrame implements ActionListener{
         // create a text area, specifying the rows and columns
         jt = new JTextArea(4, 25);
 
-        functionName=new JLabel();
+        //functionName=new JLabel();
 
-        jtParameters=new JTextArea(2,5);
-        jtReturnVal=new JTextArea(2,5);
-        jtPara1=new JTextArea(2,5);
-        jtPara2=new JTextArea(2,5);
+        jtParameters = new JTextArea(2, 5);
+        jtReturnVal = new JTextArea(2, 5);
+        jtPara1 = new JTextArea(2, 5);
+        jtPara2 = new JTextArea(2, 5);
 
-        test=new JButton("Test function");
+        test = new JButton("Test function");
         test.addActionListener(te);
 
         p = new JPanel();
@@ -144,7 +150,7 @@ public class TestingApp extends JFrame implements ActionListener{
         p.add(li);
         p.add(li1);
         p.add(table);
-        p.add(functionName);
+        //p.add(functionName);
         p.add(jtParameters);
         p.add(jtReturnVal);
         p.add(jtPara1);
@@ -161,7 +167,7 @@ public class TestingApp extends JFrame implements ActionListener{
     // to be executed when the button is pressed
     public void actionPerformed(ActionEvent e) {
 
-        if(e.getSource()==b){
+        if (e.getSource() == b) {
             String s = e.getActionCommand();
             //Checks if button is pressed. String would be set to button value
             if (s.equals("Choose as filepath")) {
@@ -177,9 +183,9 @@ public class TestingApp extends JFrame implements ActionListener{
                 }
             }
         }
-        if(e.getSource()==test){
-            String s=e.getActionCommand();
-            if(s.equals("Test function")){
+        if (e.getSource() == test) {
+            String s = e.getActionCommand();
+            if (s.equals("Test function")) {
                 try {
                     generateTest();
                 } catch (IOException ex) {
@@ -320,17 +326,14 @@ public class TestingApp extends JFrame implements ActionListener{
                 }
                 currFunction = functionName;
                 functionsToBeTested.add(functionName);
-            }
-            else if(line.contains("@Autowired")){
-                autowiredFlag=1;
-            }
-            else if(autowiredFlag==1){
-                String temp=line.substring(line.indexOf("private")+8,line.indexOf(";")); //Abc abc
-                String objName=temp.substring(temp.indexOf(" ")+1);
+            } else if (line.contains("@Autowired")) {
+                autowiredFlag = 1;
+            } else if (autowiredFlag == 1) {
+                String temp = line.substring(line.indexOf("private") + 8, line.indexOf(";")); //Abc abc
+                String objName = temp.substring(temp.indexOf(" ") + 1);
                 autowiredObjectList.add(objName);
-                autowiredFlag=0;
-            }
-            else {
+                autowiredFlag = 0;
+            } else {
                 //Logic for extracting the functions that are being called by the external objects
                 for (Map.Entry<String, HashMap<String, List<String>>> entry : functionData.entrySet()) {
                     if (entry.getKey() == currFunction) {
@@ -338,58 +341,75 @@ public class TestingApp extends JFrame implements ActionListener{
                             if (line.contains((String) entry2.getKey() + ".")) {
                                 int startIndex = line.indexOf(".") + 1;
                                 int endIndex = line.indexOf("(") + 1;
-                                entry2.getValue().add(line.substring(startIndex, endIndex)+")");
+                                entry2.getValue().add(line.substring(startIndex, endIndex) + ")");
 
-                                /*List<String> temp = Arrays.asList(line.split(" "));
-                                String startWord=temp.get(0);
+                                line = line.trim();
+                                List<String> temp1 = Arrays.asList(line.split(" "));
+                                String startWord = temp1.get(0);
                                 //Not returning a value
-                                if(!isKeyword(startWord)) {
+                                if (startWord.contains(".")) {
                                     continue;
                                 }
 
-                                whenReturnThisFunctions.add(line.substring(line.indexOf(entry.getKey()),line.indexOf("(")+1)+")");*/
+                                if(whenReturnThisFunctions.containsKey(currFunction)){
+                                    whenReturnThisFunctions.get(currFunction).add(line.substring(line.indexOf((String)entry2.getKey()), line.indexOf("(") + 1));
                                 }
-
+                                else{
+                                    Vector<String> temp2 = new Vector<>();
+                                    temp2.add(line.substring(line.indexOf((String)entry2.getKey()), line.indexOf("(") + 1));
+                                    whenReturnThisFunctions.put(currFunction,temp2);
+                                }
+                                break;
                             }
                         }
-                        break;
                     }
                 }
 
-                for(int i=0;i<autowiredObjectList.size();i++){
-                    if(line.contains(autowiredObjectList.get(i)+".")){
+                for (int i = 0; i < autowiredObjectList.size(); i++) {
+                    if (line.contains(autowiredObjectList.get(i) + ".")) {
                         int startIndex = line.indexOf(".") + 1;
                         int endIndex = line.indexOf("(") + 1;
                         List<String> temp = new ArrayList<>();
-                        functionData.get(currFunction).put(autowiredObjectList.get(i),temp);
-                        functionData.get(currFunction).get(autowiredObjectList.get(i)).add(line.substring(startIndex,endIndex)+")");
+                        functionData.get(currFunction).put(autowiredObjectList.get(i), temp);
+                        functionData.get(currFunction).get(autowiredObjectList.get(i)).add(line.substring(startIndex, endIndex)+")");
 
-                        /*line=line.trim();
+                        line = line.trim();
                         List<String> temp1 = Arrays.asList(line.split(" "));
-                        String startWord=temp1.get(0);
-                        System.out.println(startWord);
+                        String startWord = temp1.get(0);
                         //Not returning a value
-                        if(startWord.contains(".")) {
+                        if (startWord.contains(".")) {
                             continue;
                         }
-                        Vector<String> temp2=new Vector<>();
-                        temp2.add(line.substring(line.indexOf(autowiredObjectList.get(i)),line.indexOf("(")+1)+")");
-                        whenReturnThisFunctions.put(currFunction,temp2);*/
+
+                        if(whenReturnThisFunctions.containsKey(currFunction)){
+                            whenReturnThisFunctions.get(currFunction).add(line.substring(line.indexOf(autowiredObjectList.get(i)), line.indexOf("(") + 1));
+                        }
+                        else{
+                            Vector<String> temp2 = new Vector<>();
+                            temp2.add(line.substring(line.indexOf(autowiredObjectList.get(i)), line.indexOf("(") + 1));
+                            whenReturnThisFunctions.put(currFunction,temp2);
+                        }
+
                         break;
                     }
                 }
             }
 
-            //Generating @Mocks in the file
-        for (int i = 0; i < externalObjectList.size(); i++) {
-                output.write("@Mock\n");
-                output.write(externalObjectList.get(i) + " mock" + externalObjectList.get(i) + ";\n\n");
+            numKeys=whenReturnThisFunctions.size();
         }
 
-        for (int i = 0; i < autowiredObjectList.size(); i++) {
-            output.write("@Mock\n");
-            output.write(autowiredObjectList.get(i) + " mock" + autowiredObjectList.get(i) + ";\n\n");
-        }
+            System.out.println(whenReturnThisFunctions);
+
+            //Generating @Mocks in the file
+            for (int i = 0; i < externalObjectList.size(); i++) {
+                output.write("@Mock\n");
+                output.write(externalObjectList.get(i) + " mock" + externalObjectList.get(i) + ";\n\n");
+            }
+
+            for (int i = 0; i < autowiredObjectList.size(); i++) {
+                output.write("@Mock\n");
+                output.write(autowiredObjectList.get(i) + " mock" + autowiredObjectList.get(i) + ";\n\n");
+            }
 
             table.setValueAt("Public functions being called", 0, 0);
             table.setValueAt("External objects being referenced", 0, 1);
@@ -410,51 +430,48 @@ public class TestingApp extends JFrame implements ActionListener{
             output.write("@Before\n");
             output.write("public void beforeTest(){\n\n");
             output.write("}\n\n");
-
-
-
-            //System.out.println(whenReturnThisFunctions);
-
             output.write("}");
             br.close();
             fr.close();
         }
 
-        public void generateTest() throws IOException {
+    public void generateTest() throws IOException {
 
-            //FileWriter output = new FileWriter("TestCodeTester.java");
+        //FileWriter output = new FileWriter("TestCodeTester.java");
 
-            for (String s : functionsToBeTested) {
-                functionName.setText(s);
+        if(numKeys>whenReturnThisFunctions.size() || check==false){
 
-                t1=jtParameters.getText();
-                t2=jtReturnVal.getText();
-                t3=jtPara1.getText();
-                t4=jtPara2.getText();
-                
-
+            for(Map.Entry<String, Vector<String>> entry:whenReturnThisFunctions.entrySet()){
+                s1=entry.getKey();
                 output.write("@Test\n");
-                output.write("public void " + "test" + s + "{\n\n");
-
-                /*for (Map.Entry<String, HashMap<String, List<String>>> entry : functionData.entrySet()) {
-
-                    if(entry.getKey()==s){
-                        for (Map.Entry<String, List<String>> entry2 : entry.getValue().entrySet()) {
-                            int key= Integer.parseInt(entry2.getKey());
-                            if(whenReturnThisFunctions.containsKey(key)){
-                                Vector<String> temp=whenReturnThisFunctions.get(key);
-                                for(int i=0;i<temp.size();i++){
-                                    output.write("when("+temp.get(i)+t1)
-                                }
-                            }
-                        }
-                        break;
-                    }
-                }*/
-
-                output.write("}\n\n");
+                output.write("public void " + "test" + s1 + "{\n\n");
+                check=true;
+                numKeys=whenReturnThisFunctions.size();
+                break;
             }
-            output.close();
         }
-}
 
+            t1=jtParameters.getText();
+            t2=jtReturnVal.getText();
+            t3=jtPara1.getText();
+            t4=jtPara2.getText();
+
+            output.write("when("+whenReturnThisFunctions.get(s1).get(0)+t1+")).thenReturn("+t2+");\n");
+
+            if(whenReturnThisFunctions.get(s1).size()==1){
+                output.write("Assert.assertEquals("+nameOfClassBeingTested+"."+s1.substring(0,s1.indexOf("("))+"("+t3+"),"+t4+");\n");
+                output.write("}\n");
+                whenReturnThisFunctions.get(s1).remove(0);
+                whenReturnThisFunctions.remove(s1);
+            }
+            else{
+                whenReturnThisFunctions.get(s1).remove(0);
+            }
+
+            if(whenReturnThisFunctions.size()==0){
+                output.write("}");
+                output.close();
+            }
+
+        }
+    }
