@@ -44,13 +44,14 @@ labelService mocklabelService;
 @Before
 public void beforeTest(){
 
+when(recordUtils.getEntityKeyPrefix(1).thenReturn(key1);
+when(recordUtils.getEntityKeyPrefix(2).thenReturn(key2);
 }
 
-}@Test
+@Test
 public void testFunction1(ExternalClass1 obj1,ExternalClass2 obj2,int id){
 
 when(obj1.ExternalClass1Function1(1)).thenReturn(1);
-when(obj1.ExternalClass1Function2(1)).thenReturn(1);
 when(recordUtils.getRecordInfoById(1)).thenReturn(1);
 when(recordService.saveRecord(1)).thenReturn(1);
 Assert.assertEquals(TestCode.Function1(1),1);
@@ -58,7 +59,6 @@ Assert.assertEquals(TestCode.Function1(1),1);
 @Test
 public void testFunction2(ExternalClass1 obj1){
 
-when(recordUtils.getEntityKeyPrefix(1)).thenReturn(1);
 when(labelService.getLabel(1)).thenReturn(1);
 Assert.assertEquals(TestCode.Function2(1),1);
 }

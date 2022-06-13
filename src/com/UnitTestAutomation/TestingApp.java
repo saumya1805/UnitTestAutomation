@@ -1,5 +1,6 @@
 package com.UnitTestAutomation;
 
+import jdk.internal.cmm.SystemResourcePressureImpl;
 import sun.awt.image.ImageWatched;
 
 import java.awt.*;
@@ -12,11 +13,12 @@ import static javax.lang.model.SourceVersion.*;
 
 public class TestingApp extends JFrame implements ActionListener {
 
-
     public static boolean check=false;
     String s1;
 
     public static int numKeys;
+
+    public static int beforeFlag=0;
 
     FileWriter output = new FileWriter("TestCodeTester.java");
 
@@ -44,7 +46,7 @@ public class TestingApp extends JFrame implements ActionListener {
 
     public static HashMap<String, Vector<String>> whenReturnThisFunctions = new LinkedHashMap();
 
-    //Flag for registering that previous file had an @Autowired
+    public static Vector<String> beforeData=new Vector<>();
 
     public static String t1;
 
@@ -54,6 +56,7 @@ public class TestingApp extends JFrame implements ActionListener {
 
     public static String t4;
 
+    //Flag for registering that previous line had an @Autowired object
     public static int autowiredFlag = 0;
 
     //Java Swing GUI Components
@@ -65,15 +68,29 @@ public class TestingApp extends JFrame implements ActionListener {
     // JButton
     static JButton b;
 
+    static JButton before;
+
     static JButton test;
 
     // label to display text
     static JLabel l;
 
+    static JLabel l1;
+
+    static JLabel l2;
+
     //static JLabel functionName;
 
     // text area
     static JTextArea jt;
+
+    static JTextArea objName;
+
+    static JTextArea funcName;
+
+    static JTextArea funcParameters;
+
+    static JTextArea funcReturnVal;
 
     static JTextArea jtParameters;
 
@@ -83,11 +100,11 @@ public class TestingApp extends JFrame implements ActionListener {
 
     static JTextArea jtPara2;
 
-    static JList li;
+    //static JList li;
 
-    static JList li1;
+    //static JList li1;
 
-    static JList list;
+    //static JList list;
 
     //To display the hashmap created
     static JTable table;
@@ -103,24 +120,21 @@ public class TestingApp extends JFrame implements ActionListener {
         // create a new frame to store text field and button
         f = new JFrame("Testing Application");
 
-        // create a label to display text
-        l = new JLabel("The file path chosen is:\n");
-
         // create a new button
         b = new JButton("Choose as filepath");
 
-        li = new JList(functionsToBeTested);
+        //li = new JList(functionsToBeTested);
 
-        li1 = new JList(externalObjectList);
+        //li1 = new JList(externalObjectList);
 
-        list = new JList();
+        //list = new JList();
 
-        JCheckBox checkBox = new JCheckBox();
+        l=new JLabel("Function data extracted from the file:\n");
 
-        table = new JTable(40, 3);
+        table = new JTable(20, 3);
         table.getColumnModel().getColumn(0).setPreferredWidth(400);
         table.getColumnModel().getColumn(1).setPreferredWidth(400);
-        table.getColumnModel().getColumn(2).setPreferredWidth(400);
+        table.getColumnModel().getColumn(2).setPreferredWidth(420);
 
         // create an object of the text class
         TestingApp te = new TestingApp();
@@ -128,17 +142,28 @@ public class TestingApp extends JFrame implements ActionListener {
         // addActionListener to button
         b.addActionListener(te);
 
+        l1=new JLabel("@Before generation:\n");
+
         // create a text area, specifying the rows and columns
-        jt = new JTextArea(4, 25);
+        jt = new JTextArea("Enter the absolute file path here",4,8);
+
+        objName=new JTextArea("Object name",2,6);
+        funcName=new JTextArea("Function name",2,6);
+        funcParameters=new JTextArea("Parameters name",2,6);
+        funcReturnVal=new JTextArea("Return value",2,6);
+
+        before = new JButton("Place in @Before");
+        before.addActionListener(te);
 
         //functionName=new JLabel();
+        l2=new JLabel("@Test generation\n");
 
-        jtParameters = new JTextArea(2, 5);
-        jtReturnVal = new JTextArea(2, 5);
-        jtPara1 = new JTextArea(2, 5);
-        jtPara2 = new JTextArea(2, 5);
+        jtParameters = new JTextArea("Parameters for mock function",2, 6);
+        jtReturnVal = new JTextArea("Return Value for mock function",2, 6);
+        jtPara1 = new JTextArea("Parameters for function under test",2, 6);
+        jtPara2 = new JTextArea("Expected output for function under test",2, 6);
 
-        test = new JButton("Test function");
+        test = new JButton("Place in @Test");
         test.addActionListener(te);
 
         p = new JPanel();
@@ -147,10 +172,15 @@ public class TestingApp extends JFrame implements ActionListener {
         p.add(jt);
         p.add(b);
         p.add(l);
-        p.add(li);
-        p.add(li1);
         p.add(table);
         //p.add(functionName);
+        p.add(l1);
+        p.add(objName);
+        p.add(funcName);
+        p.add(funcParameters);
+        p.add(funcReturnVal);
+        p.add(before);
+        p.add(l2);
         p.add(jtParameters);
         p.add(jtReturnVal);
         p.add(jtPara1);
@@ -183,9 +213,19 @@ public class TestingApp extends JFrame implements ActionListener {
                 }
             }
         }
-        if (e.getSource() == test) {
+        else if(e.getSource()==before){
+            String s=e.getActionCommand();
+            if(s.equals("Place in @Before")){
+                try {
+                    generateBefore();
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+        }
+        else if (e.getSource() == test) {
             String s = e.getActionCommand();
-            if (s.equals("Test function")) {
+            if (s.equals("Place in @Test")) {
                 try {
                     generateTest();
                 } catch (IOException ex) {
@@ -239,7 +279,6 @@ public class TestingApp extends JFrame implements ActionListener {
 
             //This is where the actual parsing happens
             //Every line of code will be parsed to identify the tokens present in it
-
 
             //Line read was an import statement
             //Copy the import to the unit test file
@@ -373,7 +412,7 @@ public class TestingApp extends JFrame implements ActionListener {
                         functionData.get(currFunction).put(autowiredObjectList.get(i), temp);
                         functionData.get(currFunction).get(autowiredObjectList.get(i)).add(line.substring(startIndex, endIndex)+")");
 
-                        line = line.trim();
+                        line=line.trim();
                         List<String> temp1 = Arrays.asList(line.split(" "));
                         String startWord = temp1.get(0);
                         //Not returning a value
@@ -394,7 +433,6 @@ public class TestingApp extends JFrame implements ActionListener {
                     }
                 }
             }
-
             numKeys=whenReturnThisFunctions.size();
         }
 
@@ -429,17 +467,39 @@ public class TestingApp extends JFrame implements ActionListener {
 
             output.write("@Before\n");
             output.write("public void beforeTest(){\n\n");
-            output.write("}\n\n");
-            output.write("}");
             br.close();
             fr.close();
         }
 
+        public void generateBefore() throws IOException {
+            t1=objName.getText();
+            t2=funcName.getText();
+            t3=funcParameters.getText();
+            t4=funcReturnVal.getText();
+
+            beforeData.add(t1+"."+t2);
+
+            output.write("when("+t1+"."+t2+"("+t3+").thenReturn("+t4+");\n");
+        }
+
     public void generateTest() throws IOException {
 
-        //FileWriter output = new FileWriter("TestCodeTester.java");
+        if(beforeFlag==0){
+            beforeFlag=1;
+            output.write("}\n\n");
+        }
 
-        if(numKeys>whenReturnThisFunctions.size() || check==false){
+        for(Map.Entry<String, Vector<String>> entry:whenReturnThisFunctions.entrySet()){
+            s1=entry.getKey();
+            String testString=whenReturnThisFunctions.get(s1).get(0);
+            if(beforeData.contains(testString.substring(0,testString.indexOf("(")))){
+                whenReturnThisFunctions.get(s1).remove(0);
+                return;
+            }
+            break;
+        }
+
+        if(numKeys>whenReturnThisFunctions.size() || !check){
 
             for(Map.Entry<String, Vector<String>> entry:whenReturnThisFunctions.entrySet()){
                 s1=entry.getKey();
@@ -472,6 +532,5 @@ public class TestingApp extends JFrame implements ActionListener {
                 output.write("}");
                 output.close();
             }
-
-        }
     }
+}
